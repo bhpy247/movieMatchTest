@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:movie_match/core/utils/constants.dart';
+import 'package:movie_match/models/movie_model.dart';
 
 import '../core/database/app_database.dart';
 import '../core/database/daos/movies_dao.dart';
@@ -49,7 +51,7 @@ class _MatchesView extends StatelessWidget {
             return Center(child: Text(state.message));
           }
 
-          final matches    = (state as MatchesLoaded).matches;
+          final matches = (state as MatchesLoaded).matches;
           final hasTopPick = state.hasTopPick;
 
           return ListView.builder(
@@ -60,17 +62,28 @@ class _MatchesView extends StatelessWidget {
               final isTopPick = hasTopPick && i == 0;
 
               return _MatchTile(
-                result:     result,
-                isTopPick:  isTopPick,
-                rank:       i + 1,
+                result: result,
+                isTopPick: isTopPick,
+                rank: i + 1,
                 onTap: () => context.push(
-                  '/users/0/movies/${result.movie.tmdbId}',
+                  '/users/0/movies/${result.movie.id}',
                   extra: {
-                    'user':  UserModel(
-                      id: 0, email: '', firstName: 'You',
-                      lastName: '', avatar: '', localId: 0,
+                    'user': const UserModel(
+                      id: 0,
+                      email: '',
+                      firstName: 'You',
+                      lastName: '',
+                      avatar: '',
+                      localId: 0,
                     ),
-                    'movie': result.movie,
+                    'movie': MovieModel(
+                      title: result.movie.title,
+                      id: result.movie.id,
+                      overview: result.movie.overview,
+                      posterPath: result.movie.posterPath,
+                      releaseDate: result.movie.releaseDate,
+                      voteAverage: result.movie.voteAverage,
+                    )
                   },
                 ),
               );
@@ -85,9 +98,9 @@ class _MatchesView extends StatelessWidget {
 // ── Single match tile ──────────────────────────────────────────
 class _MatchTile extends StatelessWidget {
   final MovieMatchResult result;
-  final bool             isTopPick;
-  final int              rank;
-  final VoidCallback     onTap;
+  final bool isTopPick;
+  final int rank;
+  final VoidCallback onTap;
 
   const _MatchTile({
     required this.result,
@@ -108,9 +121,9 @@ class _MatchTile extends StatelessWidget {
       // Top pick gets golden border
       shape: isTopPick
           ? RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.amber[600]!, width: 2),
-      )
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: Colors.amber[600]!, width: 2),
+            )
           : null,
       child: InkWell(
         onTap: onTap,
@@ -125,8 +138,7 @@ class _MatchTile extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.emoji_events_rounded,
-                        size: 16, color: Colors.white),
+                    const Icon(Icons.emoji_events_rounded, size: 16, color: Colors.white),
                     const SizedBox(width: 6),
                     Text(
                       'Everyone\'s Top Pick!',
@@ -143,16 +155,18 @@ class _MatchTile extends StatelessWidget {
               children: [
                 // Poster
                 CachedNetworkImage(
-                  imageUrl: movie.posterSmall,
+                  imageUrl: AppConstants.posterSmall(movie.posterPath),
                   width: 80,
-                  height: 115,
+                  // height: 115,
                   fit: BoxFit.cover,
                   placeholder: (_, __) => Container(
-                    width: 80, height: 115,
+                    width: 80,
+                    height: 115,
                     color: theme.colorScheme.surfaceVariant,
                   ),
                   errorWidget: (_, __, ___) => Container(
-                    width: 80, height: 115,
+                    width: 80,
+                    height: 115,
                     color: theme.colorScheme.surfaceVariant,
                     child: const Icon(Icons.broken_image_rounded),
                   ),
@@ -168,7 +182,8 @@ class _MatchTile extends StatelessWidget {
                         Row(
                           children: [
                             Container(
-                              width: 24, height: 24,
+                              width: 24,
+                              height: 24,
                               decoration: BoxDecoration(
                                 color: theme.colorScheme.primaryContainer,
                                 shape: BoxShape.circle,
@@ -196,7 +211,7 @@ class _MatchTile extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          movie.releaseYear,
+                          movie.releaseDate,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.outline,
                           ),
@@ -205,8 +220,7 @@ class _MatchTile extends StatelessWidget {
 
                         // Save count chip
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.secondaryContainer,
                             borderRadius: BorderRadius.circular(20),
@@ -215,8 +229,7 @@ class _MatchTile extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.people_rounded,
-                                  size: 13,
-                                  color: theme.colorScheme.secondary),
+                                  size: 13, color: theme.colorScheme.secondary),
                               const SizedBox(width: 4),
                               Text(
                                 '${result.saveCount} want to watch',
@@ -270,9 +283,9 @@ class _StackedAvatars extends StatelessWidget {
                     : null,
                 child: e.value.avatarUrl.isEmpty
                     ? Text(
-                  e.value.firstName[0].toUpperCase(),
-                  style: const TextStyle(fontSize: 10),
-                )
+                        e.value.firstName[0].toUpperCase(),
+                        style: const TextStyle(fontSize: 10),
+                      )
                     : null,
               ),
             ),
@@ -310,8 +323,8 @@ class _EmptyState extends StatelessWidget {
               'When 2 or more users save the same movie, it appears here.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.outline,
-              ),
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
             ),
           ],
         ),

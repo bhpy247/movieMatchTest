@@ -1,3 +1,147 @@
+// import 'package:connectivity_plus/connectivity_plus.dart';
+// import 'package:dio/dio.dart';
+//
+// import '../core/database/daos/movies_dao.dart';
+// import '../core/database/daos/users_dao.dart';
+// import '../core/netwok/service_locator.dart';
+// import '../models/movie_model.dart';
+// import '../models/user_model.dart';
+//
+// class MovieRepository {
+//   final MoviesDao _moviesDao = sl<MoviesDao>();
+//   final UsersDao _usersDao = sl<UsersDao>();
+//   final Dio _tmdbDio = sl<Dio>(instanceName: 'tmdb');
+//
+//   // ── Fetch trending movies (paginated) ─────────────────────────
+//   Future<List<MovieModel>> fetchTrending({
+//     int page = 1,
+//     required int activeUserId,
+//   }) async {
+//     try {
+//       final res = await _tmdbDio.get(
+//         '/trending/movie/day',
+//         queryParameters: {'language': 'en-US', 'page': page},
+//       );
+//       final List results = res.data['results'] as List;
+//       print("Movie List : ${results.length}");
+//       final movies = results.map((e) => MovieModel.fromJson(e)).toList();
+//       print("Movie List : ${movies.length}");
+//
+//       for (final m in movies) {
+//         print("Movie : ${m.id}");
+//
+//         await _moviesDao.upsertMovie(m.toCompanion());
+//       }
+//       return _attachLocalData(movies, activeUserId);
+//     } on DioException catch (e) {
+//       if (e.type == DioExceptionType.connectionError) {
+//         return _cachedMovies(activeUserId);
+//       }
+//       rethrow;
+//     }
+//   }
+//
+//   // ── Fetch movie detail ─────────────────────────────────────────
+//   Future<MovieModel> fetchMovieDetail({
+//     required int movieId,
+//     required int activeUserId,
+//   }) async {
+//     try {
+//       final res = await _tmdbDio.get('/movie/$movieId');
+//       final movie = MovieModel.fromJson(res.data);
+//       await _moviesDao.upsertMovie(movie.toCompanion());
+//
+//       final count = await _moviesDao.watchSaveCount(movieId).first;
+//       final isSaved = await _moviesDao.isMovieSaved(activeUserId, movieId);
+//       final savedUsers = await _getSavedByUsers(movieId);
+//
+//       return movie.copyWith(
+//         saveCount: count,
+//         isSavedByActiveUser: isSaved,
+//         savedByUsers: savedUsers,
+//       );
+//     } on DioException catch (e) {
+//       if (e.type == DioExceptionType.connectionError) {
+//         final cached = await _moviesDao.watchSavedMoviesForUser(activeUserId).first;
+//         final match = cached.where((m) => m.tmdbId == movieId).firstOrNull;
+//         if (match != null) return MovieModel.fromDb(match);
+//         rethrow;
+//       }
+//       rethrow;
+//     }
+//   }
+//
+//   // ── Toggle save / unsave ───────────────────────────────────────
+//   Future<void> toggleSave({required int userId, required int movieId}) async {
+//     final isSaved = await _moviesDao.isMovieSaved(userId, movieId);
+//     if (isSaved) {
+//       await _moviesDao.unsaveMovie(userId, movieId);
+//     } else {
+//       await _moviesDao.saveMovie(userId, movieId).whenComplete(() {
+//         print("COmpleted");
+//       });
+//     }
+//   }
+//
+//   // ── Stream: saved movies for a user (offline-first) ──────────
+//   Stream<List<MovieModel>> watchSavedMovies(int userId) {
+//     return _moviesDao.watchSavedMoviesForUser(userId).asyncMap((dbList) async {
+//       final result = <MovieModel>[];
+//       for (final db in dbList) {
+//         final count = await _moviesDao.watchSaveCount(db.tmdbId).first;
+//         final isSaved = await _moviesDao.isMovieSaved(userId, db.tmdbId);
+//         result.add(MovieModel.fromDb(db).copyWith(
+//           saveCount: count,
+//           isSavedByActiveUser: isSaved,
+//         ));
+//       }
+//       print("UserID : $userId $result $dbList");
+//
+//       return result;
+//     });
+//   }
+//
+//   // ── Stream: matches ────────────────────────────────────────────
+//   Stream<List<MovieMatchResult>> watchMatches() => _moviesDao.watchMatches();
+//
+//   // ── Stream: live badge count ───────────────────────────────────
+//   Stream<int> watchSaveCount(int movieId) => _moviesDao.watchSaveCount(movieId);
+//
+//   // ── Helpers ───────────────────────────────────────────────────
+//   Future<List<MovieModel>> _attachLocalData(
+//     List<MovieModel> movies,
+//     int activeUserId,
+//   ) async {
+//     final result = <MovieModel>[];
+//     for (final m in movies) {
+//       final count = await _moviesDao.watchSaveCount(m.id).first;
+//       final isSaved = await _moviesDao.isMovieSaved(activeUserId, m.id);
+//       result.add(m.copyWith(saveCount: count, isSavedByActiveUser: isSaved));
+//     }
+//     return result;
+//   }
+//
+//   Future<List<MovieModel>> _cachedMovies(int activeUserId) async {
+//     final dbList = await _moviesDao.watchSavedMoviesForUser(activeUserId).first;
+//     final result = <MovieModel>[];
+//     for (final db in dbList) {
+//       final count = await _moviesDao.watchSaveCount(db.tmdbId).first;
+//       final isSaved = await _moviesDao.isMovieSaved(activeUserId, db.tmdbId);
+//       result.add(MovieModel.fromDb(db).copyWith(
+//         saveCount: count,
+//         isSavedByActiveUser: isSaved,
+//       ));
+//     }
+//     return result;
+//   }
+//
+//   Future<List<UserModel>> _getSavedByUsers(int movieId) async {
+//     final matches = await _moviesDao.watchMatches().first;
+//     final match = matches.where((m) => m.movie.tmdbId == movieId).firstOrNull;
+//     if (match == null) return [];
+//     return match.users.map((db) => UserModel.fromDb(db)).toList();
+//   }
+// }
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 
@@ -9,10 +153,10 @@ import '../models/user_model.dart';
 
 class MovieRepository {
   final MoviesDao _moviesDao = sl<MoviesDao>();
-  final UsersDao  _usersDao  = sl<UsersDao>();
-  final Dio       _tmdbDio   = sl<Dio>(instanceName: 'tmdb');
+  final UsersDao _usersDao = sl<UsersDao>();
+  final Dio _tmdbDio = sl<Dio>(instanceName: 'tmdb');
 
-  // ── Fetch trending movies (paginated) ─────────────────────────
+  // ───────────────── FETCH TRENDING ─────────────────
   Future<List<MovieModel>> fetchTrending({
     int page = 1,
     required int activeUserId,
@@ -20,40 +164,85 @@ class MovieRepository {
     try {
       final res = await _tmdbDio.get(
         '/trending/movie/day',
-        queryParameters: {'language': 'en-US', 'page': page},
+        queryParameters: {
+          'language': 'en-US',
+          'page': page,
+        },
       );
+
       final List results = res.data['results'] as List;
-      print("Movie List : ${results.length}");
+
+      print("========== FETCH TRENDING ==========");
+      print("Movies From API: ${results.length}");
+
       final movies = results.map((e) => MovieModel.fromJson(e)).toList();
-      print("Movie List : ${movies.length}");
 
       for (final m in movies) {
-        print("Movie : ${m.id}");
+        print(
+          "UPSERT MOVIE => "
+          "${m.title} "
+          "TMDB => ${m.id}",
+        );
 
-        await _moviesDao.upsertMovie(m.toCompanion());
+        await _moviesDao.upsertMovie(
+          m.toCompanion(),
+        );
       }
-      return _attachLocalData(movies, activeUserId);
+
+      print("====================================");
+
+      return _attachLocalData(
+        movies,
+        activeUserId,
+      );
     } on DioException catch (e) {
+      print("Fetch Trending Error: $e");
+
       if (e.type == DioExceptionType.connectionError) {
         return _cachedMovies(activeUserId);
       }
+
       rethrow;
     }
   }
 
-  // ── Fetch movie detail ─────────────────────────────────────────
+  // ───────────────── FETCH MOVIE DETAIL ─────────────────
   Future<MovieModel> fetchMovieDetail({
     required int movieId,
     required int activeUserId,
   }) async {
     try {
-      final res   = await _tmdbDio.get('/movie/$movieId');
-      final movie = MovieModel.fromJson(res.data);
-      await _moviesDao.upsertMovie(movie.toCompanion());
+      print("========== FETCH DETAIL ==========");
+      print("Movie ID: $movieId");
 
-      final count      = await _moviesDao.watchSaveCount(movieId).first;
-      final isSaved    = await _moviesDao.isMovieSaved(activeUserId, movieId);
+      final res = await _tmdbDio.get(
+        '/movie/$movieId',
+      );
+
+      final movie = MovieModel.fromJson(res.data);
+
+      // IMPORTANT
+      // SAVE MOVIE TO LOCAL DB
+      await _moviesDao.upsertMovie(
+        movie.toCompanion(),
+      );
+
+      final count = await _moviesDao.watchSaveCount(movieId).first;
+
+      final isSaved = await _moviesDao.isMovieSaved(
+        activeUserId,
+        movieId,
+      );
+
       final savedUsers = await _getSavedByUsers(movieId);
+
+      print(
+        "Movie Loaded => "
+        "${movie.title} "
+        "Saved => $isSaved",
+      );
+
+      print("==================================");
 
       return movie.copyWith(
         saveCount: count,
@@ -61,81 +250,190 @@ class MovieRepository {
         savedByUsers: savedUsers,
       );
     } on DioException catch (e) {
+      print("Fetch Movie Detail Error: $e");
+
       if (e.type == DioExceptionType.connectionError) {
         final cached = await _moviesDao.watchSavedMoviesForUser(activeUserId).first;
-        final match  = cached.where((m) => m.tmdbId == movieId).firstOrNull;
-        if (match != null) return MovieModel.fromDb(match);
+
+        final match = cached.where((m) => m.id == movieId).firstOrNull;
+
+        if (match != null) {
+          return MovieModel.fromDb(match);
+        }
+
         rethrow;
       }
+
       rethrow;
     }
   }
 
-  // ── Toggle save / unsave ───────────────────────────────────────
-  Future<void> toggleSave({required int userId, required int movieId}) async {
-    final isSaved = await _moviesDao.isMovieSaved(userId, movieId);
-    if (isSaved) {
-      await _moviesDao.unsaveMovie(userId, movieId);
-    } else {
-      await _moviesDao.saveMovie(userId, movieId);
+  // ───────────────── TOGGLE SAVE ─────────────────
+  ///
+  /// IMPORTANT FIX:
+  /// BEFORE SAVING RELATION
+  /// INSERT MOVIE INTO MOVIES TABLE
+  Future<void> toggleSave({
+    required int userId,
+    required MovieModel movie,
+  }) async {
+    try {
+      print("========== TOGGLE SAVE ==========");
+      print("User ID: $userId");
+      print("Movie: ${movie.title}");
+      print("TMDB ID: ${movie.id}");
+
+      final isSaved = await _moviesDao.isMovieSaved(
+        userId,
+        movie.id,
+      );
+
+      print("Already Saved: $isSaved");
+
+      if (isSaved) {
+        // UNSAVE
+        await _moviesDao.unsaveMovie(
+          userId,
+          movie.id,
+        );
+
+        print("Movie unsaved");
+      } else {
+        // IMPORTANT FIX
+        // INSERT MOVIE FIRST
+        await _moviesDao.upsertMovie(
+          movie.toCompanion(),
+        );
+
+        print("Movie inserted into movies table");
+
+        // THEN SAVE RELATION
+        await _moviesDao.saveMovie(
+          userId,
+          movie.id,
+        );
+
+        print("Movie saved successfully");
+      }
+
+      // DEBUG
+      await _moviesDao.debugMoviesTable();
+      await _moviesDao.debugSavedMovies();
+
+      print("================================");
+    } catch (e) {
+      print("Toggle Save Error: $e");
     }
   }
 
-  // ── Stream: saved movies for a user (offline-first) ──────────
-  Stream<List<MovieModel>> watchSavedMovies(int userId) {
+  // ───────────────── WATCH SAVED MOVIES ─────────────────
+  Stream<List<MovieModel>> watchSavedMovies(
+    int userId,
+  ) {
     return _moviesDao.watchSavedMoviesForUser(userId).asyncMap((dbList) async {
+      print("========== WATCH SAVED MOVIES ==========");
+      print("User ID: $userId");
+      print("Movies Found: ${dbList.length}");
+
       final result = <MovieModel>[];
+
       for (final db in dbList) {
-        final count   = await _moviesDao.watchSaveCount(db.tmdbId).first;
-        final isSaved = await _moviesDao.isMovieSaved(userId, db.tmdbId);
-        result.add(MovieModel.fromDb(db).copyWith(
-          saveCount: count,
-          isSavedByActiveUser: isSaved,
-        ));
+        print(
+          "Saved Movie => "
+          "${db.title} "
+          "TMDB => ${db.id}",
+        );
+
+        final count = await _moviesDao.watchSaveCount(db.id).first;
+
+        final isSaved = await _moviesDao.isMovieSaved(
+          userId,
+          db.id,
+        );
+
+        result.add(
+          MovieModel.fromDb(db).copyWith(
+            saveCount: count,
+            isSavedByActiveUser: isSaved,
+          ),
+        );
       }
+
+      print("========================================");
+
       return result;
     });
   }
 
-  // ── Stream: matches ────────────────────────────────────────────
-  Stream<List<MovieMatchResult>> watchMatches() =>
-      _moviesDao.watchMatches();
+  // ───────────────── WATCH MATCHES ─────────────────
+  Stream<List<MovieMatchResult>> watchMatches() => _moviesDao.watchMatches();
 
-  // ── Stream: live badge count ───────────────────────────────────
-  Stream<int> watchSaveCount(int movieId) =>
-      _moviesDao.watchSaveCount(movieId);
+  // ───────────────── WATCH SAVE COUNT ─────────────────
+  Stream<int> watchSaveCount(int movieId) => _moviesDao.watchSaveCount(movieId);
 
-  // ── Helpers ───────────────────────────────────────────────────
+  // ───────────────── HELPERS ─────────────────
   Future<List<MovieModel>> _attachLocalData(
-      List<MovieModel> movies,
-      int activeUserId,
-      ) async {
+    List<MovieModel> movies,
+    int activeUserId,
+  ) async {
     final result = <MovieModel>[];
+
     for (final m in movies) {
-      final count   = await _moviesDao.watchSaveCount(m.id).first;
-      final isSaved = await _moviesDao.isMovieSaved(activeUserId, m.id);
-      result.add(m.copyWith(saveCount: count, isSavedByActiveUser: isSaved));
+      final count = await _moviesDao.watchSaveCount(m.id).first;
+
+      final isSaved = await _moviesDao.isMovieSaved(
+        activeUserId,
+        m.id,
+      );
+
+      result.add(
+        m.copyWith(
+          saveCount: count,
+          isSavedByActiveUser: isSaved,
+        ),
+      );
     }
+
     return result;
   }
 
-  Future<List<MovieModel>> _cachedMovies(int activeUserId) async {
+  Future<List<MovieModel>> _cachedMovies(
+    int activeUserId,
+  ) async {
     final dbList = await _moviesDao.watchSavedMoviesForUser(activeUserId).first;
+
     final result = <MovieModel>[];
+
     for (final db in dbList) {
-      final count   = await _moviesDao.watchSaveCount(db.tmdbId).first;
-      final isSaved = await _moviesDao.isMovieSaved(activeUserId, db.tmdbId);
-      result.add(MovieModel.fromDb(db).copyWith(
-        saveCount: count, isSavedByActiveUser: isSaved,
-      ));
+      final count = await _moviesDao.watchSaveCount(db.id).first;
+
+      final isSaved = await _moviesDao.isMovieSaved(
+        activeUserId,
+        db.id,
+      );
+
+      result.add(
+        MovieModel.fromDb(db).copyWith(
+          saveCount: count,
+          isSavedByActiveUser: isSaved,
+        ),
+      );
     }
+
     return result;
   }
 
-  Future<List<UserModel>> _getSavedByUsers(int movieId) async {
+  Future<List<UserModel>> _getSavedByUsers(
+    int movieId,
+  ) async {
     final matches = await _moviesDao.watchMatches().first;
-    final match   = matches.where((m) => m.movie.tmdbId == movieId).firstOrNull;
-    if (match == null) return [];
+
+    final match = matches.where((m) => m.movie.id == movieId).firstOrNull;
+
+    if (match == null) {
+      return [];
+    }
+
     return match.users.map((db) => UserModel.fromDb(db)).toList();
   }
 }

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../cubits/users_cubit.dart';
 import '../models/user_model.dart';
-import '../repositories/user_repository.dart';
+import 'package:movie_match/repositories/user_repository.dart' show UserRepository;
 import '../widgets/shimmer_loader.dart';
 import '../widgets/user_tile.dart';
 
@@ -50,71 +50,54 @@ class _UsersViewState extends State<_UsersView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('MovieMatch'),
-        actions: [
-          TextButton.icon(
-            onPressed: () => context.push('/matches'),
-            icon: const Icon(Icons.movie_filter_rounded),
-            label: const Text('Matches'),
+    // ── BlocConsumer wraps everything including Scaffold
+    // so that users.length is accessible in AppBar
+    return BlocConsumer<UsersCubit, UsersState>(
+      listener: (context, state) {
+        if (state is UsersError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      },
+      builder: (context, state) {
+        // Resolve users list from any state
+        final users = switch (state) {
+          UsersLoaded s => s.users,
+          UsersLoadingMore s => s.currentUsers,
+          _ => <UserModel>[],
+        };
+
+        final isOffline = state is UsersLoaded && state.isOffline;
+        final isLoadingMore = state is UsersLoadingMore;
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('MovieMatch'),
+            actions: [
+              TextButton.icon(
+                onPressed: () => context.push(
+                  '/matches',
+                  extra: users.length, // ✅ now accessible
+                ),
+                icon: const Icon(Icons.movie_filter_rounded),
+                label: const Text('Matches'),
+              ),
+            ],
           ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final cubit = context.read<UsersCubit>();
-          await context.push('/users/add', extra: cubit);
-        },
-        child: const Icon(Icons.person_add_rounded),
-      ),
-      body: BlocConsumer<UsersCubit, UsersState>(
-        listener: (context, state) {
-          if (state is UsersError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          }
-        },
-        builder: (context, state) {
-          // First load
-          if (state is UsersLoading) {
-            return const ShimmerList();
-          }
-
-          // Error with empty list
-          if (state is UsersError) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.wifi_off_rounded, size: 48),
-                  const SizedBox(height: 12),
-                  Text(state.message),
-                  const SizedBox(height: 16),
-                  FilledButton(
-                    onPressed: () => context.read<UsersCubit>().fetchUsers(),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final users = switch (state) {
-            UsersLoaded s      => s.users,
-            UsersLoadingMore s => s.currentUsers,
-            _                  => < UserModel>[],
-          };
-          final isOffline = state is UsersLoaded && state.isOffline;
-          final isLoadingMore = state is UsersLoadingMore;
-
-          return Column(
+          floatingActionButton: FloatingActionButton(
+            onPressed: () async {
+              final cubit = context.read<UsersCubit>();
+              await context.push('/users/add', extra: cubit);
+            },
+            child: const Icon(Icons.person_add_rounded),
+          ),
+          body: Column(
             children: [
-              // Offline banner
+              // ── Offline banner ─────────────────────────
               if (isOffline)
                 MaterialBanner(
                   content: const Text('Showing cached data — you are offline'),
@@ -127,32 +110,55 @@ class _UsersViewState extends State<_UsersView> {
                   ],
                 ),
 
-              // User list
-              Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
-                  itemCount: users.length + (isLoadingMore ? 3 : 0),
-                  itemBuilder: (context, i) {
-                    // Bottom shimmer skeletons while loading more
-                    if (i >= users.length) {
-                      return const ShimmerTile();
-                    }
-                    final user = users[i];
-                    return UserTile(
-                      user: user,
-                      onTap: () => context.push(
-                        '/users/${user.localId}/movies',
-                        extra: user,
-                      ),
-                    );
-                  },
+              // ── First load shimmer ──────────────────────
+              if (state is UsersLoading) const Expanded(child: ShimmerList()),
+
+              // ── Error state ─────────────────────────────
+              if (state is UsersError)
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.wifi_off_rounded, size: 48),
+                        const SizedBox(height: 12),
+                        Text(state.message),
+                        const SizedBox(height: 16),
+                        FilledButton(
+                          onPressed: () => context.read<UsersCubit>().fetchUsers(),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+
+              // ── Users list ──────────────────────────────
+              if (state is! UsersLoading && state is! UsersError)
+                Expanded(
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+                    itemCount: users.length + (isLoadingMore ? 3 : 0),
+                    itemBuilder: (context, i) {
+                      // Shimmer tiles at bottom during pagination
+                      if (i >= users.length) return const ShimmerTile();
+
+                      final user = users[i];
+                      return UserTile(
+                        user: user,
+                        onTap: () => context.push(
+                          '/users/${user.localId}/movies',
+                          extra: user,
+                        ),
+                      );
+                    },
+                  ),
+                ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

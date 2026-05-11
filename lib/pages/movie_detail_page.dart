@@ -10,7 +10,7 @@ import '../widgets/save_badge.dart';
 
 class MovieDetailPage extends StatelessWidget {
   final UserModel activeUser;
-  final MovieModel movie;      // passed for hero tag + instant render
+  final MovieModel movie; // passed for hero tag + instant render
   final MoviesCubit? listCubit; // to sync save state back to list
 
   const MovieDetailPage({
@@ -37,7 +37,7 @@ class MovieDetailPage extends StatelessWidget {
 }
 
 class _DetailView extends StatelessWidget {
-  final UserModel  activeUser;
+  final UserModel activeUser;
   final MovieModel initialMovie;
   final MoviesCubit? listCubit;
 
@@ -86,8 +86,8 @@ class _DetailView extends StatelessWidget {
                     child: _SaveButton(
                       movie: movie,
                       onSave: () async {
-                        await context.read<MoviesCubit>().toggleSave(movie.id);
-                        listCubit?.toggleSave(movie.id); // sync back to list
+                        await context.read<MoviesCubit>().toggleSave(movie);
+                        listCubit?.toggleSave(movie); // sync back to list
                       },
                     ),
                   ),
@@ -121,8 +121,7 @@ class _DetailView extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 16),
-                          Icon(Icons.star_rounded,
-                              size: 14, color: Colors.amber[600]),
+                          Icon(Icons.star_rounded, size: 14, color: Colors.amber[600]),
                           const SizedBox(width: 4),
                           Text(
                             movie.voteAverage.toStringAsFixed(1),
@@ -135,9 +134,7 @@ class _DetailView extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       // Save count + avatars
-                      isLoading
-                          ? const _SavedByShimmer()
-                          : _SavedByRow(movie: movie),
+                      isLoading ? const _SavedByShimmer() : _SavedByRow(movie: movie),
 
                       const SizedBox(height: 20),
                       const Divider(),
@@ -147,9 +144,7 @@ class _DetailView extends StatelessWidget {
                       Text('Overview', style: theme.textTheme.titleMedium),
                       const SizedBox(height: 8),
                       Text(
-                        movie.overview.isNotEmpty
-                            ? movie.overview
-                            : 'No description available.',
+                        movie.overview.isNotEmpty ? movie.overview : 'No description available.',
                         style: theme.textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 40),
@@ -178,9 +173,7 @@ class _SaveButton extends StatelessWidget {
       icon: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
         child: Icon(
-          movie.isSavedByActiveUser
-              ? Icons.bookmark_rounded
-              : Icons.bookmark_border_rounded,
+          movie.isSavedByActiveUser ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
           key: ValueKey(movie.isSavedByActiveUser),
         ),
       ),
@@ -201,8 +194,7 @@ class _SavedByRow extends StatelessWidget {
     if (users.isEmpty) {
       return Row(
         children: [
-          Icon(Icons.bookmark_border_rounded,
-              size: 16, color: theme.colorScheme.outline),
+          Icon(Icons.bookmark_border_rounded, size: 16, color: theme.colorScheme.outline),
           const SizedBox(width: 6),
           Text(
             'Be the first to save this',
@@ -226,12 +218,9 @@ class _SavedByRow extends StatelessWidget {
                 left: e.key * 22.0,
                 child: CircleAvatar(
                   radius: 14,
-                  backgroundImage: e.value.avatar.isNotEmpty
-                      ? CachedNetworkImageProvider(e.value.avatar)
-                      : null,
-                  child: e.value.avatar.isEmpty
-                      ? Text(e.value.firstName[0])
-                      : null,
+                  backgroundImage:
+                      e.value.avatar.isNotEmpty ? CachedNetworkImageProvider(e.value.avatar) : null,
+                  child: e.value.avatar.isEmpty ? Text(e.value.firstName[0]) : null,
                 ),
               );
             }).toList(),
@@ -255,14 +244,16 @@ class _SavedByShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(width: 32, height: 32,
-            decoration: const BoxDecoration(
-                color: Colors.grey, shape: BoxShape.circle)),
+        Container(
+            width: 32,
+            height: 32,
+            decoration: const BoxDecoration(color: Colors.grey, shape: BoxShape.circle)),
         const SizedBox(width: 8),
-        Container(width: 160, height: 12,
-            decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(4))),
+        Container(
+            width: 160,
+            height: 12,
+            decoration:
+                BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(4))),
       ],
     );
   }

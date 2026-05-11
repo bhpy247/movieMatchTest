@@ -468,10 +468,10 @@ class $MoviesTableTable extends MoviesTable
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $MoviesTableTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _tmdbIdMeta = const VerificationMeta('tmdbId');
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int> tmdbId = GeneratedColumn<int>(
-      'tmdb_id', aliasedName, false,
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
@@ -512,7 +512,7 @@ class $MoviesTableTable extends MoviesTable
       defaultValue: const Constant(0.0));
   @override
   List<GeneratedColumn> get $columns =>
-      [tmdbId, title, overview, posterPath, releaseDate, voteAverage];
+      [id, title, overview, posterPath, releaseDate, voteAverage];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -523,9 +523,8 @@ class $MoviesTableTable extends MoviesTable
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('tmdb_id')) {
-      context.handle(_tmdbIdMeta,
-          tmdbId.isAcceptableOrUnknown(data['tmdb_id']!, _tmdbIdMeta));
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('title')) {
       context.handle(
@@ -559,13 +558,13 @@ class $MoviesTableTable extends MoviesTable
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {tmdbId};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   MoviesTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return MoviesTableData(
-      tmdbId: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}tmdb_id'])!,
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       title: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
       overview: attachedDatabase.typeMapping
@@ -586,14 +585,14 @@ class $MoviesTableTable extends MoviesTable
 }
 
 class MoviesTableData extends DataClass implements Insertable<MoviesTableData> {
-  final int tmdbId;
+  final int id;
   final String title;
   final String overview;
   final String posterPath;
   final String releaseDate;
   final double voteAverage;
   const MoviesTableData(
-      {required this.tmdbId,
+      {required this.id,
       required this.title,
       required this.overview,
       required this.posterPath,
@@ -602,7 +601,7 @@ class MoviesTableData extends DataClass implements Insertable<MoviesTableData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['tmdb_id'] = Variable<int>(tmdbId);
+    map['id'] = Variable<int>(id);
     map['title'] = Variable<String>(title);
     map['overview'] = Variable<String>(overview);
     map['poster_path'] = Variable<String>(posterPath);
@@ -613,7 +612,7 @@ class MoviesTableData extends DataClass implements Insertable<MoviesTableData> {
 
   MoviesTableCompanion toCompanion(bool nullToAbsent) {
     return MoviesTableCompanion(
-      tmdbId: Value(tmdbId),
+      id: Value(id),
       title: Value(title),
       overview: Value(overview),
       posterPath: Value(posterPath),
@@ -626,7 +625,7 @@ class MoviesTableData extends DataClass implements Insertable<MoviesTableData> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return MoviesTableData(
-      tmdbId: serializer.fromJson<int>(json['tmdbId']),
+      id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
       overview: serializer.fromJson<String>(json['overview']),
       posterPath: serializer.fromJson<String>(json['posterPath']),
@@ -638,7 +637,7 @@ class MoviesTableData extends DataClass implements Insertable<MoviesTableData> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'tmdbId': serializer.toJson<int>(tmdbId),
+      'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
       'overview': serializer.toJson<String>(overview),
       'posterPath': serializer.toJson<String>(posterPath),
@@ -648,14 +647,14 @@ class MoviesTableData extends DataClass implements Insertable<MoviesTableData> {
   }
 
   MoviesTableData copyWith(
-          {int? tmdbId,
+          {int? id,
           String? title,
           String? overview,
           String? posterPath,
           String? releaseDate,
           double? voteAverage}) =>
       MoviesTableData(
-        tmdbId: tmdbId ?? this.tmdbId,
+        id: id ?? this.id,
         title: title ?? this.title,
         overview: overview ?? this.overview,
         posterPath: posterPath ?? this.posterPath,
@@ -664,7 +663,7 @@ class MoviesTableData extends DataClass implements Insertable<MoviesTableData> {
       );
   MoviesTableData copyWithCompanion(MoviesTableCompanion data) {
     return MoviesTableData(
-      tmdbId: data.tmdbId.present ? data.tmdbId.value : this.tmdbId,
+      id: data.id.present ? data.id.value : this.id,
       title: data.title.present ? data.title.value : this.title,
       overview: data.overview.present ? data.overview.value : this.overview,
       posterPath:
@@ -679,7 +678,7 @@ class MoviesTableData extends DataClass implements Insertable<MoviesTableData> {
   @override
   String toString() {
     return (StringBuffer('MoviesTableData(')
-          ..write('tmdbId: $tmdbId, ')
+          ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('overview: $overview, ')
           ..write('posterPath: $posterPath, ')
@@ -690,13 +689,13 @@ class MoviesTableData extends DataClass implements Insertable<MoviesTableData> {
   }
 
   @override
-  int get hashCode => Object.hash(
-      tmdbId, title, overview, posterPath, releaseDate, voteAverage);
+  int get hashCode =>
+      Object.hash(id, title, overview, posterPath, releaseDate, voteAverage);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is MoviesTableData &&
-          other.tmdbId == this.tmdbId &&
+          other.id == this.id &&
           other.title == this.title &&
           other.overview == this.overview &&
           other.posterPath == this.posterPath &&
@@ -705,14 +704,14 @@ class MoviesTableData extends DataClass implements Insertable<MoviesTableData> {
 }
 
 class MoviesTableCompanion extends UpdateCompanion<MoviesTableData> {
-  final Value<int> tmdbId;
+  final Value<int> id;
   final Value<String> title;
   final Value<String> overview;
   final Value<String> posterPath;
   final Value<String> releaseDate;
   final Value<double> voteAverage;
   const MoviesTableCompanion({
-    this.tmdbId = const Value.absent(),
+    this.id = const Value.absent(),
     this.title = const Value.absent(),
     this.overview = const Value.absent(),
     this.posterPath = const Value.absent(),
@@ -720,7 +719,7 @@ class MoviesTableCompanion extends UpdateCompanion<MoviesTableData> {
     this.voteAverage = const Value.absent(),
   });
   MoviesTableCompanion.insert({
-    this.tmdbId = const Value.absent(),
+    this.id = const Value.absent(),
     required String title,
     this.overview = const Value.absent(),
     this.posterPath = const Value.absent(),
@@ -728,7 +727,7 @@ class MoviesTableCompanion extends UpdateCompanion<MoviesTableData> {
     this.voteAverage = const Value.absent(),
   }) : title = Value(title);
   static Insertable<MoviesTableData> custom({
-    Expression<int>? tmdbId,
+    Expression<int>? id,
     Expression<String>? title,
     Expression<String>? overview,
     Expression<String>? posterPath,
@@ -736,7 +735,7 @@ class MoviesTableCompanion extends UpdateCompanion<MoviesTableData> {
     Expression<double>? voteAverage,
   }) {
     return RawValuesInsertable({
-      if (tmdbId != null) 'tmdb_id': tmdbId,
+      if (id != null) 'id': id,
       if (title != null) 'title': title,
       if (overview != null) 'overview': overview,
       if (posterPath != null) 'poster_path': posterPath,
@@ -746,14 +745,14 @@ class MoviesTableCompanion extends UpdateCompanion<MoviesTableData> {
   }
 
   MoviesTableCompanion copyWith(
-      {Value<int>? tmdbId,
+      {Value<int>? id,
       Value<String>? title,
       Value<String>? overview,
       Value<String>? posterPath,
       Value<String>? releaseDate,
       Value<double>? voteAverage}) {
     return MoviesTableCompanion(
-      tmdbId: tmdbId ?? this.tmdbId,
+      id: id ?? this.id,
       title: title ?? this.title,
       overview: overview ?? this.overview,
       posterPath: posterPath ?? this.posterPath,
@@ -765,8 +764,8 @@ class MoviesTableCompanion extends UpdateCompanion<MoviesTableData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (tmdbId.present) {
-      map['tmdb_id'] = Variable<int>(tmdbId.value);
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
@@ -789,7 +788,7 @@ class MoviesTableCompanion extends UpdateCompanion<MoviesTableData> {
   @override
   String toString() {
     return (StringBuffer('MoviesTableCompanion(')
-          ..write('tmdbId: $tmdbId, ')
+          ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('overview: $overview, ')
           ..write('posterPath: $posterPath, ')
@@ -831,7 +830,7 @@ class $SavedMoviesTableTable extends SavedMoviesTable
       type: DriftSqlType.int,
       requiredDuringInsert: true,
       defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES movies (tmdb_id)'));
+          GeneratedColumn.constraintIsAlways('REFERENCES movies (id)'));
   static const VerificationMeta _savedAtMeta =
       const VerificationMeta('savedAt');
   @override
@@ -1398,7 +1397,7 @@ typedef $$UsersTableTableProcessedTableManager = ProcessedTableManager<
     PrefetchHooks Function({bool savedMoviesTableRefs})>;
 typedef $$MoviesTableTableCreateCompanionBuilder = MoviesTableCompanion
     Function({
-  Value<int> tmdbId,
+  Value<int> id,
   required String title,
   Value<String> overview,
   Value<String> posterPath,
@@ -1407,7 +1406,7 @@ typedef $$MoviesTableTableCreateCompanionBuilder = MoviesTableCompanion
 });
 typedef $$MoviesTableTableUpdateCompanionBuilder = MoviesTableCompanion
     Function({
-  Value<int> tmdbId,
+  Value<int> id,
   Value<String> title,
   Value<String> overview,
   Value<String> posterPath,
@@ -1423,12 +1422,12 @@ final class $$MoviesTableTableReferences
       _savedMoviesTableRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.savedMoviesTable,
               aliasName: $_aliasNameGenerator(
-                  db.moviesTable.tmdbId, db.savedMoviesTable.movieId));
+                  db.moviesTable.id, db.savedMoviesTable.movieId));
 
   $$SavedMoviesTableTableProcessedTableManager get savedMoviesTableRefs {
     final manager =
-        $$SavedMoviesTableTableTableManager($_db, $_db.savedMoviesTable).filter(
-            (f) => f.movieId.tmdbId.sqlEquals($_itemColumn<int>('tmdb_id')!));
+        $$SavedMoviesTableTableTableManager($_db, $_db.savedMoviesTable)
+            .filter((f) => f.movieId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache =
         $_typedResult.readTableOrNull(_savedMoviesTableRefsTable($_db));
@@ -1446,8 +1445,8 @@ class $$MoviesTableTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get tmdbId => $composableBuilder(
-      column: $table.tmdbId, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get title => $composableBuilder(
       column: $table.title, builder: (column) => ColumnFilters(column));
@@ -1468,7 +1467,7 @@ class $$MoviesTableTableFilterComposer
       Expression<bool> Function($$SavedMoviesTableTableFilterComposer f) f) {
     final $$SavedMoviesTableTableFilterComposer composer = $composerBuilder(
         composer: this,
-        getCurrentColumn: (t) => t.tmdbId,
+        getCurrentColumn: (t) => t.id,
         referencedTable: $db.savedMoviesTable,
         getReferencedColumn: (t) => t.movieId,
         builder: (joinBuilder,
@@ -1495,8 +1494,8 @@ class $$MoviesTableTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get tmdbId => $composableBuilder(
-      column: $table.tmdbId, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get title => $composableBuilder(
       column: $table.title, builder: (column) => ColumnOrderings(column));
@@ -1523,8 +1522,8 @@ class $$MoviesTableTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get tmdbId =>
-      $composableBuilder(column: $table.tmdbId, builder: (column) => column);
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
 
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
@@ -1545,7 +1544,7 @@ class $$MoviesTableTableAnnotationComposer
       Expression<T> Function($$SavedMoviesTableTableAnnotationComposer a) f) {
     final $$SavedMoviesTableTableAnnotationComposer composer = $composerBuilder(
         composer: this,
-        getCurrentColumn: (t) => t.tmdbId,
+        getCurrentColumn: (t) => t.id,
         referencedTable: $db.savedMoviesTable,
         getReferencedColumn: (t) => t.movieId,
         builder: (joinBuilder,
@@ -1586,7 +1585,7 @@ class $$MoviesTableTableTableManager extends RootTableManager<
           createComputedFieldComposer: () =>
               $$MoviesTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
-            Value<int> tmdbId = const Value.absent(),
+            Value<int> id = const Value.absent(),
             Value<String> title = const Value.absent(),
             Value<String> overview = const Value.absent(),
             Value<String> posterPath = const Value.absent(),
@@ -1594,7 +1593,7 @@ class $$MoviesTableTableTableManager extends RootTableManager<
             Value<double> voteAverage = const Value.absent(),
           }) =>
               MoviesTableCompanion(
-            tmdbId: tmdbId,
+            id: id,
             title: title,
             overview: overview,
             posterPath: posterPath,
@@ -1602,7 +1601,7 @@ class $$MoviesTableTableTableManager extends RootTableManager<
             voteAverage: voteAverage,
           ),
           createCompanionCallback: ({
-            Value<int> tmdbId = const Value.absent(),
+            Value<int> id = const Value.absent(),
             required String title,
             Value<String> overview = const Value.absent(),
             Value<String> posterPath = const Value.absent(),
@@ -1610,7 +1609,7 @@ class $$MoviesTableTableTableManager extends RootTableManager<
             Value<double> voteAverage = const Value.absent(),
           }) =>
               MoviesTableCompanion.insert(
-            tmdbId: tmdbId,
+            id: id,
             title: title,
             overview: overview,
             posterPath: posterPath,
@@ -1641,9 +1640,9 @@ class $$MoviesTableTableTableManager extends RootTableManager<
                         managerFromTypedResult: (p0) =>
                             $$MoviesTableTableReferences(db, table, p0)
                                 .savedMoviesTableRefs,
-                        referencedItemsForCurrentItem:
-                            (item, referencedItems) => referencedItems
-                                .where((e) => e.movieId == item.tmdbId),
+                        referencedItemsForCurrentItem: (item,
+                                referencedItems) =>
+                            referencedItems.where((e) => e.movieId == item.id),
                         typedResults: items)
                 ];
               },
@@ -1700,14 +1699,14 @@ final class $$SavedMoviesTableTableReferences extends BaseReferences<
   }
 
   static $MoviesTableTable _movieIdTable(_$AppDatabase db) =>
-      db.moviesTable.createAlias($_aliasNameGenerator(
-          db.savedMoviesTable.movieId, db.moviesTable.tmdbId));
+      db.moviesTable.createAlias(
+          $_aliasNameGenerator(db.savedMoviesTable.movieId, db.moviesTable.id));
 
   $$MoviesTableTableProcessedTableManager get movieId {
     final $_column = $_itemColumn<int>('movie_id')!;
 
     final manager = $$MoviesTableTableTableManager($_db, $_db.moviesTable)
-        .filter((f) => f.tmdbId.sqlEquals($_column));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_movieIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -1755,7 +1754,7 @@ class $$SavedMoviesTableTableFilterComposer
         composer: this,
         getCurrentColumn: (t) => t.movieId,
         referencedTable: $db.moviesTable,
-        getReferencedColumn: (t) => t.tmdbId,
+        getReferencedColumn: (t) => t.id,
         builder: (joinBuilder,
                 {$addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer}) =>
@@ -1811,7 +1810,7 @@ class $$SavedMoviesTableTableOrderingComposer
         composer: this,
         getCurrentColumn: (t) => t.movieId,
         referencedTable: $db.moviesTable,
-        getReferencedColumn: (t) => t.tmdbId,
+        getReferencedColumn: (t) => t.id,
         builder: (joinBuilder,
                 {$addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer}) =>
@@ -1867,7 +1866,7 @@ class $$SavedMoviesTableTableAnnotationComposer
         composer: this,
         getCurrentColumn: (t) => t.movieId,
         referencedTable: $db.moviesTable,
-        getReferencedColumn: (t) => t.tmdbId,
+        getReferencedColumn: (t) => t.id,
         builder: (joinBuilder,
                 {$addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer}) =>
@@ -1969,9 +1968,8 @@ class $$SavedMoviesTableTableTableManager extends RootTableManager<
                     currentColumn: table.movieId,
                     referencedTable:
                         $$SavedMoviesTableTableReferences._movieIdTable(db),
-                    referencedColumn: $$SavedMoviesTableTableReferences
-                        ._movieIdTable(db)
-                        .tmdbId,
+                    referencedColumn:
+                        $$SavedMoviesTableTableReferences._movieIdTable(db).id,
                   ) as T;
                 }
 

@@ -107,11 +107,11 @@ class _MoviesViewState extends State<_MoviesView> {
           }
 
           final movies = switch (state) {
-            MoviesLoaded s      => s.movies,
+            MoviesLoaded s => s.movies,
             MoviesLoadingMore s => s.currentMovies,
-            _                   => [],
+            _ => [],
           };
-          final isOffline     = state is MoviesLoaded && state.isOffline;
+          final isOffline = state is MoviesLoaded && state.isOffline;
           final isLoadingMore = state is MoviesLoadingMore;
 
           return Column(
@@ -147,7 +147,7 @@ class _MoviesViewState extends State<_MoviesView> {
                           'cubit': context.read<MoviesCubit>(),
                         },
                       ),
-                      onSave: () => context.read<MoviesCubit>().toggleSave(movie.id),
+                      onSave: () => context.read<MoviesCubit>().toggleSave(movie),
                     );
                   },
                 ),

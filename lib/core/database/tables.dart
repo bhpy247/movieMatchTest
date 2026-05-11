@@ -21,7 +21,8 @@ class MoviesTable extends Table {
   @override
   String get tableName => 'movies';
 
-  IntColumn get tmdbId => integer()();
+  IntColumn get id => integer()();
+  IntColumn get movieId => integer()();
   TextColumn get title => text()();
   TextColumn get overview => text().withDefault(const Constant(''))();
   TextColumn get posterPath => text().withDefault(const Constant(''))();
@@ -29,7 +30,7 @@ class MoviesTable extends Table {
   RealColumn get voteAverage => real().withDefault(const Constant(0.0))();
 
   @override
-  Set<Column> get primaryKey => {tmdbId};
+  Set<Column> get primaryKey => {id};
 }
 
 // ── saved_movies (junction) ────────────────────────────────────
@@ -39,7 +40,7 @@ class SavedMoviesTable extends Table {
 
   IntColumn get id => integer().autoIncrement()();
   IntColumn get userId => integer().references(UsersTable, #id)();
-  IntColumn get movieId => integer().references(MoviesTable, #tmdbId)();
+  IntColumn get movieId => integer().references(MoviesTable, #movieId)();
   DateTimeColumn get savedAt => dateTime().withDefault(currentDateAndTime)();
 
   @override

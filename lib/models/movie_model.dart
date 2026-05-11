@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:movie_match/models/user_model.dart';
 
 import '../core/database/app_database.dart';
@@ -60,7 +61,7 @@ class MovieModel {
 
   // From local Drift DB row (MovieData)
   factory MovieModel.fromDb(MovieData db) => MovieModel(
-        id: db.tmdbId,
+        id: db.id,
         title: db.title,
         overview: db.overview,
         posterPath: db.posterPath,
@@ -70,12 +71,12 @@ class MovieModel {
 
   // Convert to Drift companion for upsert
   MoviesTableCompanion toCompanion() => MoviesTableCompanion.insert(
-        // tmdbId: ,
+        id: Value(id),
         title: title,
-        // overview: Value(overview),
-        // posterPath: Value(posterPath),
-        // releaseDate: Value(releaseDate),
-        // voteAverage: Value(voteAverage),
+        overview: Value(overview),
+        posterPath: Value(posterPath),
+        releaseDate: Value(releaseDate),
+        voteAverage: Value(voteAverage),
       );
 
   MovieModel copyWith({
@@ -104,7 +105,3 @@ class MovieModel {
 typedef MovieData = dynamic;
 // typedef MoviesTableCompanion = dynamic;
 // typedef UserModel = dynamic;
-
-class Value<T> {
-  const Value(T v);
-}
