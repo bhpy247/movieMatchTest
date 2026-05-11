@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import '../../../models/movie_model.dart';
-import '../../../models/user_model.dart';
 import '../app_database.dart';
 import '../tables.dart';
 
@@ -9,7 +8,8 @@ part 'movies_dao.g.dart';
 class MovieMatchResult {
   final MovieData movie;
   final int saveCount;
-  final List<UserData> users;
+  final List<UsersTableData> users;
+
   const MovieMatchResult({
     required this.movie,
     required this.saveCount,
@@ -21,21 +21,25 @@ class MovieMatchResult {
 class MoviesDao extends DatabaseAccessor<AppDatabase> with _$MoviesDaoMixin {
   MoviesDao(super.db);
 
-  // Future<void> upsertMovie(MoviesTableCompanion movie) =>
-  //     into(moviesTable).insertOnConflictUpdate(movie);
+  Future<void> upsertMovie(MoviesTableCompanion movie) async {
+    print("Movie in upserMovie ${movie.title}");
+    into(moviesTable).insertOnConflictUpdate(movie);
+  }
 
   Future<void> saveMovie(int userId, int movieId) => into(savedMoviesTable).insertOnConflictUpdate(
         SavedMoviesTableCompanion.insert(userId: userId, movieId: movieId),
       );
 
   Future<void> unsaveMovie(int userId, int movieId) =>
-      (delete(savedMoviesTable)..where((s) => s.userId.equals(userId) & s.movieId.equals(movieId)))
-          .go();
+      (delete(savedMoviesTable)..where((s) => s.userId.equals(userId) & s.movieId.equals(movieId))).go();
 
   Future<bool> isMovieSaved(int userId, int movieId) async {
     final row = await (select(savedMoviesTable)
-          ..where((s) => s.userId.equals(userId) & s.movieId.equals(movieId)))
+          ..where(
+            (s) => s.userId.equals(userId) & s.movieId.equals(movieId),
+          ))
         .getSingleOrNull();
+
     return row != null;
   }
 

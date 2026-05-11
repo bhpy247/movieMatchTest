@@ -2,8 +2,8 @@ class AppConstants {
   AppConstants._();
 
   // ⚠️ Replace with your actual keys
-  static const String tmdbApiKey = 'YOUR_TMDB_KEY';
-  static const String reqresApiKey = 'YOUR_REQRES_KEY';
+  static const String tmdbApiKey = '695f2e1a4b51253ae3201df0efd927d7';
+  static const String reqresApiKey = 'free_user_33NJkDE48XReYwjP0s7E5q9Bkju';
 
   // TMDB image helpers
   static const String _imgSmall = 'https://image.tmdb.org/t/p/w185';

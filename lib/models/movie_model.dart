@@ -1,3 +1,6 @@
+import 'package:movie_match/models/user_model.dart';
+
+import '../core/database/app_database.dart';
 import '../core/utils/constants.dart';
 
 // TMDB Trending API response (one item):
@@ -66,14 +69,14 @@ class MovieModel {
       );
 
   // Convert to Drift companion for upsert
-  // MoviesTableCompanion toCompanion() => MoviesTableCompanion.insert(
-  //       tmdbId: id,
-  //       title: title,
-  //       overview: Value(overview),
-  //       posterPath: Value(posterPath),
-  //       releaseDate: Value(releaseDate),
-  //       voteAverage: Value(voteAverage),
-  //     );
+  MoviesTableCompanion toCompanion() => MoviesTableCompanion.insert(
+        // tmdbId: ,
+        title: title,
+        // overview: Value(overview),
+        // posterPath: Value(posterPath),
+        // releaseDate: Value(releaseDate),
+        // voteAverage: Value(voteAverage),
+      );
 
   MovieModel copyWith({
     int? saveCount,
@@ -93,10 +96,14 @@ class MovieModel {
       );
 }
 
+// extension on Type {
+//   insert({required int tmdbId, required String title})
+// }
+
 // Remove after build_runner runs (just for IDE to not complain)
 typedef MovieData = dynamic;
-typedef MoviesTableCompanion = dynamic;
-typedef UserModel = dynamic;
+// typedef MoviesTableCompanion = dynamic;
+// typedef UserModel = dynamic;
 
 class Value<T> {
   const Value(T v);
